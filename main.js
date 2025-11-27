@@ -21,6 +21,30 @@ let session = createSession();
 // 最近作成した画像を保存・読み込み
 const RECENT_KEY = 'gomasio-recent';
 const RECENT_MAX = 5;
+
+// Color Constants
+const COLORS = {
+    BLACK: '#000000',
+    WHITE: '#ffffff',
+    GRAY_LIGHT: '#f5f5f5',
+    GRAY_BORDER: '#ddd',
+    BROWN_PRIMARY: '#6a4e3c',
+    ORANGE_ACCENT: '#ea7640',
+    GAUGE: {
+        BG: '#f3eee7',
+        SHADOW: 'rgba(0, 0, 0, 0.15)',
+        GRADIENT_START: '#f7d7a8',
+        GRADIENT_MID: '#ea9a63',
+        GRADIENT_END: '#d86d3a'
+    },
+    OVERLAY: {
+        DARK: 'rgba(0, 0, 0, 0.5)',
+        GRADIENT_START: 'rgba(0, 0, 0, 1)',
+        GRADIENT_MID: 'rgba(0, 0, 0, 0.3)',
+        GRADIENT_END: 'rgba(0, 0, 0, 0)'
+    }
+};
+
 function loadRecentImages() {
     try {
         const data = localStorage.getItem(RECENT_KEY);
@@ -364,13 +388,13 @@ class Particle {
         context.rotate(this.rotation);
 
         if (this.isBlack) {
-            context.fillStyle = '#000000';
+            context.fillStyle = COLORS.BLACK;
             context.beginPath();
             context.ellipse(0, 0, size, size * 0.6, 0, 0, Math.PI * 2);
             context.fill();
         } else {
-            context.fillStyle = '#f5f5f5';
-            context.strokeStyle = '#ddd';
+            context.fillStyle = COLORS.GRAY_LIGHT;
+            context.strokeStyle = COLORS.GRAY_BORDER;
             context.lineWidth = 0.5 * scale;
             context.beginPath();
             context.rect(-size / 2, -size / 2, size, size);
@@ -420,31 +444,31 @@ function drawPowerGauge() {
     const gaugeX = (canvas.width - gaugeWidth) / 2;
     const gaugeY = 30;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillStyle = COLORS.GAUGE.SHADOW;
     ctx.fillRect(gaugeX - 5, gaugeY - 5, gaugeWidth + 10, gaugeHeight + 10);
 
-    ctx.fillStyle = '#f3eee7';
+    ctx.fillStyle = COLORS.GAUGE.BG;
     ctx.fillRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
 
     const gradient = ctx.createLinearGradient(gaugeX, 0, gaugeX + gaugeWidth, 0);
-    gradient.addColorStop(0, '#f7d7a8');
-    gradient.addColorStop(0.5, '#ea9a63');
-    gradient.addColorStop(1, '#d86d3a');
+    gradient.addColorStop(0, COLORS.GAUGE.GRADIENT_START);
+    gradient.addColorStop(0.5, COLORS.GAUGE.GRADIENT_MID);
+    gradient.addColorStop(1, COLORS.GAUGE.GRADIENT_END);
 
     ctx.fillStyle = gradient;
     ctx.fillRect(gaugeX, gaugeY, gaugeWidth * session.powerGauge, gaugeHeight);
 
-    ctx.strokeStyle = '#6a4e3c';
+    ctx.strokeStyle = COLORS.BROWN_PRIMARY;
     ctx.lineWidth = 2.5;
     ctx.strokeRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight);
 
-    ctx.fillStyle = '#6a4e3c';
+    ctx.fillStyle = COLORS.BROWN_PRIMARY;
     ctx.font = 'bold 18px \"M PLUS Rounded 1c\", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('パワー', gaugeX + gaugeWidth / 2, gaugeY - 10);
 
     const powerPercent = Math.round(session.powerGauge * 100);
-    ctx.fillStyle = '#6a4e3c';
+    ctx.fillStyle = COLORS.BROWN_PRIMARY;
     ctx.font = 'bold 16px \"M PLUS Rounded 1c\", sans-serif';
     ctx.fillText(powerPercent + '%', gaugeX + gaugeWidth / 2, gaugeY + gaugeHeight / 2 + 6);
 }
@@ -665,7 +689,7 @@ function getResizeHandlePos() {
 function drawCropCircle() {
     cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
     cropCtx.drawImage(offscreenCanvas, 0, 0);
-    cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    cropCtx.fillStyle = COLORS.OVERLAY.DARK;
     cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
 
     const maskX = cropMask.x - cropMask.width / 2;
@@ -687,9 +711,9 @@ function drawCropCircle() {
             renderRadius
         );
         // なめらかに透明へ移行する単一グラデーション
-        gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-        gradient.addColorStop(0.6, 'rgba(0, 0, 0, 0.3)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        gradient.addColorStop(0, COLORS.OVERLAY.GRADIENT_START);
+        gradient.addColorStop(0.6, COLORS.OVERLAY.GRADIENT_MID);
+        gradient.addColorStop(1, COLORS.OVERLAY.GRADIENT_END);
         cropCtx.fillStyle = gradient;
         cropCtx.beginPath();
         cropCtx.arc(cropMask.x, cropMask.y, renderRadius, 0, Math.PI * 2);
@@ -721,18 +745,18 @@ function drawCropCircle() {
 
     // リサイズハンドル
     const handle = getResizeHandlePos();
-    cropCtx.fillStyle = '#fff';
+    cropCtx.fillStyle = COLORS.WHITE;
     cropCtx.beginPath();
     cropCtx.arc(handle.x, handle.y, 12, 0, Math.PI * 2);
     cropCtx.fill();
 
-    cropCtx.strokeStyle = '#ea7640';
+    cropCtx.strokeStyle = COLORS.ORANGE_ACCENT;
     cropCtx.lineWidth = 3;
     cropCtx.beginPath();
     cropCtx.arc(handle.x, handle.y, 12, 0, Math.PI * 2);
     cropCtx.stroke();
 
-    cropCtx.strokeStyle = '#ea7640';
+    cropCtx.strokeStyle = COLORS.ORANGE_ACCENT;
     cropCtx.lineWidth = 2;
     cropCtx.lineCap = 'round';
 
@@ -885,7 +909,7 @@ function createCroppedImage() {
 
     previewCtx.clearRect(0, 0, outputSize, outputSize);
     // 背景を白で塗りつぶす
-    previewCtx.fillStyle = '#ffffff';
+    previewCtx.fillStyle = COLORS.WHITE;
     previewCtx.fillRect(0, 0, outputSize, outputSize);
 
     const maskX = cropMask.x - cropMask.width / 2;
@@ -917,12 +941,12 @@ function createCroppedImage() {
             tempCtx.rotate(particle.rotation);
 
             if (particle.isBlack) {
-                tempCtx.fillStyle = '#000000';
+                tempCtx.fillStyle = COLORS.BLACK;
                 tempCtx.beginPath();
                 tempCtx.ellipse(0, 0, size, size * 0.6, 0, 0, Math.PI * 2);
                 tempCtx.fill();
             } else {
-                tempCtx.fillStyle = '#ffffff';
+                tempCtx.fillStyle = COLORS.WHITE;
                 tempCtx.beginPath();
                 tempCtx.rect(-size / 2, -size / 2, size, size);
                 tempCtx.fill();
